@@ -18,7 +18,7 @@ Training framework is **Tensorflow-2.13** with **Tensorflow-compression** librar
 nohup python3 bls2017.py -V train --train_glob '/xxx/train_dataset/*.png' --batchsize 16 --epochs 200 --lambda 0.125 > train.log 2>&1 &
 cat train.log | tail -n 50
 ```
-Default model path is **bls2017**, we move this repo to **bls2017_0xxxx** for different lambda params. Generally, bigger lambda results in higher bpp & PSNR.
+Default model path is **bls2017**, we move this repo to **bls2017_0xxxx** for different lambda params. Generally, bigger lambda results in higher bpp & PSNR. In **bls2017_0125**, we provide pre-train model with lambda=0.125.
 
 **Inference in Tensorflow**
 ``` 
@@ -32,7 +32,7 @@ python3 bls2017.py --model_path bls2017 decompress org.png.tfci rec.png
 ```
 python3 bls2017_me.py --model_path bls2017_0125
 ```
-## Quantization and SW-SIM
+## Quantization and SW-Sim
 
 ## HLS Design
 

@@ -45,8 +45,8 @@ def compress(args):
 
 #################################################
   specific_layer = model.get_layer('analysis')
-  fp_w = open("ana_w.bin", "wb+")
-  fp_b = open("ana_b.bin", "wb+")
+  fp_w = open("bin/ana_w.bin", "wb+")
+  fp_b = open("bin/ana_b.bin", "wb+")
 
   weights_ttt = specific_layer.layers[1].variables
   weight_values = [weight.numpy() for weight in weights_ttt]
@@ -100,8 +100,8 @@ def compress(args):
 
 ########################################################################
   specific_layer = model.get_layer('synthesis')
-  fp_w = open("syn_w.bin", "wb+")
-  fp_b = open("syn_b.bin", "wb+")
+  fp_w = open("bin/syn_w.bin", "wb+")
+  fp_b = open("bin/syn_b.bin", "wb+")
 
   weights_ttt = specific_layer.layers[0].variables
   weight_values = [weight.numpy() for weight in weights_ttt]
