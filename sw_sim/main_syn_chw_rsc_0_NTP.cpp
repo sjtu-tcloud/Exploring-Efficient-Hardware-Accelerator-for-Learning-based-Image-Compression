@@ -29,47 +29,42 @@ int main( int argc, char *argv[])
 	FILE *fp;
 	int data_num;
 	char bfile_name[256];
-	int in_dim[3];//hwc
-	if(argc==1){
-		strncpy(bfile_name, "syn_entropy_decode_out_i32", 256);
-		in_dim[0] = 86;
-		in_dim[1] = 128;
-		in_dim[2] = 128;
+
+	assert(argc==3);
+	strncpy(bfile_name, argv[1], 256);
+
+	data_num = get_file_size(argv[2]);
+	int32_t *ana_IHW_OHW_set = (int32_t *)malloc(data_num);
+	read_binfile_flt32_rb((float *)ana_IHW_OHW_set, argv[2], data_num/4);
+	for(int lnum = 0; lnum < LNUM; lnum++){
+		IH_set[lnum] = ana_IHW_OHW_set[LNUM*2 + LNUM-lnum-1];
+		IW_set[lnum] = ana_IHW_OHW_set[LNUM*3 + LNUM-lnum-1];
+		OH_set[lnum] = ana_IHW_OHW_set[       + LNUM-lnum-1];
+		OW_set[lnum] = ana_IHW_OHW_set[LNUM   + LNUM-lnum-1];
 	}
-	else{
-		if(argc<4){
-			printf("1<argc<4, exit\n");
-			return -1;
-		}
-		strncpy(bfile_name, argv[1], 256);
-		in_dim[0] = atoi(argv[2]);
-		in_dim[1] = atoi(argv[3]);
-		if(argc>4)
-			in_dim[2] = atoi(argv[4]);
-		else
-			in_dim[2] = F_num;
-	}
+	free(ana_IHW_OHW_set);
+
 
 	int pad_space_size = 0;
 	int fm_max_size = 0;
 	for(int lnum = 0; lnum < LNUM; lnum++){
 //calc ifm/ofm width/height
-		if(lnum==0){
-			IW_set[lnum] = in_dim[1];
-			IH_set[lnum] = in_dim[0];
-		}else{
-			IW_set[lnum] = OW_set[lnum-1];
-			IH_set[lnum] = OH_set[lnum-1];
-		}
+		// if(lnum==0){
+		// 	IW_set[lnum] = in_dim[1];
+		// 	IH_set[lnum] = in_dim[0];
+		// }else{
+		// 	IW_set[lnum] = OW_set[lnum-1];
+		// 	IH_set[lnum] = OH_set[lnum-1];
+		// }
 
-		int ltype = LT_set[lnum];
-		if(ltype==LT_CONVT){
-			OW_set[lnum] = IW_set[lnum]*S_set[lnum] - KS_set[lnum] + 2*P_set[lnum] +1;
-			OH_set[lnum] = IH_set[lnum]*S_set[lnum] - KS_set[lnum] + 2*P_set[lnum] +1;
-		}else{
-			OW_set[lnum] = (IW_set[lnum] - KS_set[lnum] + 2*P_set[lnum])/S_set[lnum] + 1;
-			OH_set[lnum] = (IH_set[lnum] - KS_set[lnum] + 2*P_set[lnum])/S_set[lnum] + 1;
-		}
+		// int ltype = LT_set[lnum];
+		// if(ltype==LT_CONVT){
+		// 	OW_set[lnum] = IW_set[lnum]*S_set[lnum] - KS_set[lnum] + 2*P_set[lnum] +1;
+		// 	OH_set[lnum] = IH_set[lnum]*S_set[lnum] - KS_set[lnum] + 2*P_set[lnum] +1;
+		// }else{
+		// 	OW_set[lnum] = (IW_set[lnum] - KS_set[lnum] + 2*P_set[lnum])/S_set[lnum] + 1;
+		// 	OH_set[lnum] = (IH_set[lnum] - KS_set[lnum] + 2*P_set[lnum])/S_set[lnum] + 1;
+		// }
 
 		int ifm_offset = IW_set[lnum]*IH_set[lnum]*LANE_ext(IF_NUM_set[lnum]);
 		int ofm_offset = OW_set[lnum]*OH_set[lnum]*LANE_ext(OF_NUM_set[lnum]);
@@ -101,37 +96,36 @@ int main( int argc, char *argv[])
 
 	data_num = get_file_size("syn_kernel_w_T_f32rc.bin");
 	float *kernel_w = (float *)malloc(data_num);
-	printf("read weight byte_num = %d\n", read_binfile_flt32_rb((float *)kernel_w, "syn_kernel_w_T_f32rc.bin", data_num/4));
+	read_binfile_flt32_rb((float *)kernel_w, "syn_kernel_w_T_f32rc.bin", data_num/4);
 
 	data_num = get_file_size("syn_bias_f32c.bin");
 	float *bias = (float *)malloc(data_num);
-	printf("%d\n", read_binfile_flt32_rb((float *)bias, "syn_bias_f32c.bin", data_num/4));
-	printf("read bias byte_num = %d\n", data_num);
+	read_binfile_flt32_rb((float *)bias, "syn_bias_f32c.bin", data_num/4);
 
 	int w_aoffset[LNUM];
-	printf("%d\n", read_binfile_flt32_rb((float*)w_aoffset, "syn_kernel_w_T_f32rc_oadd.bin", LNUM));
+	read_binfile_flt32_rb((float*)w_aoffset, "syn_kernel_w_T_f32rc_oadd.bin", LNUM);
 
 	int bias_aoffset[LNUM];
-	printf("%d\n", read_binfile_flt32_rb((float*)bias_aoffset, "syn_bias_f32c_oadd.bin", LNUM));
+	read_binfile_flt32_rb((float*)bias_aoffset, "syn_bias_f32c_oadd.bin", LNUM);
 
 	float *fm_mem = (float *)malloc(sizeof(float)*fm_max_size);
 
-	data_num = in_dim[0]*in_dim[1]*in_dim[2];
+	data_num = IH_set[0]*IW_set[0]*F_num;
 	float *tmp_in_buf = (float *)malloc(sizeof(float)*data_num);
 
 	fp = fopen(bfile_name, "rb");
 	fread(tmp_in_buf, sizeof(float), data_num, fp);
 	fclose(fp);
-	printf("syn_input: %s, h_w_c= [%d, %d, %d]\n", bfile_name, in_dim[0], in_dim[1], in_dim[2]);
+	printf("syn_input: %s, h_w_c= [%d, %d, %d]\n", bfile_name, IH_set[0], IW_set[0], F_num);
 
 	i32tof32_1d(tmp_in_buf, (int32_t *)tmp_in_buf, data_num);
 
-	float *syn_in_median = (float *)malloc(sizeof(float)*in_dim[2]);
-	read_binfile_flt32_rb(syn_in_median, "syn_in_median", in_dim[2]);
-	syn_add_channel_median_chw(tmp_in_buf, syn_in_median, in_dim[0], in_dim[1], in_dim[2]);
+	float *syn_in_median = (float *)malloc(sizeof(float)*F_num);
+	read_binfile_flt32_rb(syn_in_median, "syn_in_median", F_num);
+	syn_add_channel_median_chw(tmp_in_buf, syn_in_median, IH_set[0], IW_set[0], F_num);
 	free(syn_in_median);
 
-	int img_c = in_dim[2], img_h = in_dim[0], img_w = in_dim[1];
+	int img_c = F_num, img_h = IH_set[0], img_w = IW_set[0];
 	float *ifm_buf = fm_mem + IFM_offset[0];
 	int Ca3_d4 =  LANE_div(img_c);
 	for(int c4=0; c4<Ca3_d4; c4++)

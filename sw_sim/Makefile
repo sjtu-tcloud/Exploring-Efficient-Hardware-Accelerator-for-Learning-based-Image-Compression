@@ -24,11 +24,11 @@ test_as_rsc_f32c_NTP:
 	g++ -O3 -w -o test_ana main_ana_chw_rsc_0_NTP.cpp -I . -lm $(CFLAGS)
 	g++ -O3 -w -o test_syn main_syn_chw_rsc_0_NTP.cpp -I . -lm $(CFLAGS)
 	./test_ana ../abigail-keenan-27293.png
-	./test_syn ana_q_out_chw.bin 86 128
+	./test_syn ana_q_out_chw.bin ana_IHW_OHW_set.bin
 
 gen_reorder_w_sk_f32c:
-	g++ -O3 -w -o w_reorder weight_reorder_sk_f32c.cpp -I . -lm
-	./w_reorder	$(LANE_NUM) $(MAX_Tif) $(MAX_Tof)
+	g++ -O3 -w -o test_reorder weight_reorder_sk_f32c.cpp -I . -lm
+	./test_reorder	$(LANE_NUM) $(MAX_Tif) $(MAX_Tof)
 
 clean:
 	rm -rf *.png

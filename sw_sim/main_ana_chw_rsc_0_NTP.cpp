@@ -23,7 +23,7 @@ int main( int argc, char *argv[])
 	const int LT_set[LNUM] = {LT_CONV, LT_GDN, LT_CONV, LT_GDN, LT_CONV};
 	const char *LN_s[LNUM] = {"ana_0", "gdn_0", "ana_1", "gdn_1", "ana_2"};
 
-	int IW_set[LNUM], IH_set[LNUM], OW_set[LNUM], OH_set[LNUM];
+	int32_t IW_set[LNUM], IH_set[LNUM], OW_set[LNUM], OH_set[LNUM];
 	int IFM_offset[LNUM], OFM_offset[LNUM];
 
 	FILE *fp;
@@ -79,18 +79,17 @@ int main( int argc, char *argv[])
 
 	data_num = get_file_size("ana_kernel_w_f32rc.bin");
 	float *kernel_w = (float *)malloc(data_num);
-	printf("read weight byte_num = %d\n", read_binfile_flt32_rb((float *)kernel_w, "ana_kernel_w_f32rc.bin", data_num/4));
+	read_binfile_flt32_rb((float *)kernel_w, "ana_kernel_w_f32rc.bin", data_num/4);
 
 	data_num = get_file_size("ana_bias_f32c.bin");
 	float *bias = (float *)malloc(data_num);
-	printf("%d\n", read_binfile_flt32_rb((float *)bias, "ana_bias_f32c.bin", data_num/4));
-	printf("read bias byte_num = %d\n", data_num);
+	read_binfile_flt32_rb((float *)bias, "ana_bias_f32c.bin", data_num/4);
 
 	int w_aoffset[LNUM];
-	printf("%d\n", read_binfile_flt32_rb((float*)w_aoffset, "ana_kernel_w_f32rc_oadd.bin", LNUM));
+	read_binfile_flt32_rb((float*)w_aoffset, "ana_kernel_w_f32rc_oadd.bin", LNUM);
 
 	int bias_aoffset[LNUM];
-	printf("%d\n", read_binfile_flt32_rb((float*)bias_aoffset, "ana_bias_f32c_oadd.bin", LNUM));
+	read_binfile_flt32_rb((float*)bias_aoffset, "ana_bias_f32c_oadd.bin", LNUM);
 
 	float *fm_mem = (float *)malloc(sizeof(float)*fm_max_size);
 	float *img_in_chw = im.data;
@@ -303,10 +302,17 @@ int main( int argc, char *argv[])
 	ana_a05_sub_median_chw(ana_out, ofm_tmp_buf, syn_in_median, OH_set[LNUM-1], OW_set[LNUM-1], F_num);
 	free(syn_in_median);
 
-	printf("ana_output: %s, h_w_c= [%d, %d, %d]\n", "ana_q_out_chw.bin", OH_set[LNUM-1], OW_set[LNUM-1], F_num);
+	printf("ana_output: %s, h_w_c= [%d, %d, %d]\n\n", "ana_q_out_chw.bin", OH_set[LNUM-1], OW_set[LNUM-1], F_num);
 	fp = fopen("ana_q_out_chw.bin", "wb");
 	fwrite(ana_out, sizeof(int32_t), data_num, fp);
 	fclose(fp);
+
+	fp = fopen("ana_IHW_OHW_set.bin", "wb");
+	fwrite(IH_set, sizeof(int32_t), LNUM, fp);
+	fwrite(IW_set, sizeof(int32_t), LNUM, fp);	
+	fwrite(OH_set, sizeof(int32_t), LNUM, fp);
+	fwrite(OW_set, sizeof(int32_t), LNUM, fp);
+	fclose(fp);	
 
 	free(ana_out);
 	free(fm_mem);

@@ -157,7 +157,7 @@ int weight_reorder_f32c(float *Weight, int IFM_NUM,int OFM_NUM,int Ksize,int TM,
 	int tm,tn,tk;
 
 	int offset_cur = IFM_NUM*OFM_NUM*KxK;
-	printf("Layer[x]; param num=%12d ", offset_cur);
+	printf("data_num = %8d, ", offset_cur);
 	*add_offset = 0;
 
 	int TM_MIN,TN_MIN;
@@ -171,8 +171,7 @@ int weight_reorder_f32c(float *Weight, int IFM_NUM,int OFM_NUM,int Ksize,int TM,
 		}
     }
 
-	printf("add_offset = %d", *add_offset);
-	printf("\n");
+	printf("add_offset = %d.\n", *add_offset);
 	free(local_wbuf);
 
 	return 0;
@@ -190,7 +189,7 @@ int bias_reorder_f32c(float *in,const int *offset, const bool *bias_en, int laye
 			continue;
 
 		offset_cur = offset[i];
-		printf("Layer %2d;param num=%12d ",i, offset_cur);
+		printf("bias[%2d] data_num=%5d",i, offset_cur);
 
 		int data_size = ((offset_cur + lane_num -1)/lane_num)*lane_num;
 		for(int j=0;j<data_size;j++)
@@ -207,9 +206,9 @@ int bias_reorder_f32c(float *in,const int *offset, const bool *bias_en, int laye
 		if(offset_cur%lane_num)
 		{
 			add_offset[i] = lane_num - (offset_cur%lane_num);
-			printf("add %d\n", add_offset[i]);
+			printf(", add %d.\n", add_offset[i]);
 		}else{
-			printf("\n");
+			printf(".\n");
 		}
 
 		fwrite(bias_buf_c,sizeof(float), data_size, fp);
@@ -273,12 +272,10 @@ const uint32_t LNUM = 5;
 		TM = MIN(ofm_num, MaxTof);
 		TN = MIN(ifm_num, MaxTif);
 
-		// weight_reorg(kernel_w + w_offset, kernel_w_reorg+w_offset, ifm_num,ofm_num,ksize, TM, TN);
+		printf("%s: ic,oc= [%d, %d], ", LN_s[lnum], ifm_num, ofm_num);
 		weight_reorder_f32c(kernel_w + w_offset,ifm_num,ofm_num,ksize,TM,TN, LANE_NUM, MaxTif, MaxTof, &q_offset[lnum], fout, ltype);
 
 		w_offset = w_offset + ksize*ksize*ifm_num*ofm_num;
-
-		printf("%s: ic,oc= [%d, %d]\n", LN_s[lnum], ifm_num, ofm_num);
 	}
 
 	fclose(fout);//weight reorg quanti
@@ -330,13 +327,11 @@ void syn_reorder(int LANE_NUM, int MaxTif, int MaxTof){
 		w_num = w_num + IF_NUM_set[lnum]*OF_NUM_set[lnum]*KS_set[lnum]*KS_set[lnum];
 	}
 
-	// data_num = 5*5*128*128 + 1*1*128*128 + 5*5*128*128 + 1*1*128*128 + 9*9*128*3;
 	fp = fopen("../bin/syn_w.bin", "rb");
 	float *kernel_w = (float *)malloc(sizeof(float)*w_num);
 	fread(kernel_w, sizeof(float), w_num, fp);
 	fclose(fp);
 
-	// data_num = 128 + 128 + 128 + 128 + 3;
 	fp = fopen("../bin/syn_b.bin", "rb");
 	float *bias = (float *)malloc(sizeof(float)*bias_num);
 	fread(bias, sizeof(float), bias_num, fp);
@@ -359,13 +354,10 @@ void syn_reorder(int LANE_NUM, int MaxTif, int MaxTof){
 		TM = MIN(ofm_num, MaxTof);
 		TN = MIN(ifm_num, MaxTif);
 
-		// weight_reorg(kernel_w + w_offset, kernel_w_reorg+w_offset, ifm_num,ofm_num,ksize, TM, TN);
+		printf("%s: ic,oc= [%d, %d], ", LN_s[lnum], ifm_num, ofm_num);
 		weight_reorder_f32c(kernel_w + w_offset,ifm_num,ofm_num,ksize,TM,TN, LANE_NUM, MaxTif, MaxTof, &q_offset[lnum], fout, ltype);
 
 		w_offset = w_offset + ksize*ksize*ifm_num*ofm_num;
-
-		printf("%s: ic,oc= [%d, %d]\n", LN_s[lnum], ifm_num, ofm_num);
-
 	}
 
 	fclose(fout);//weight reorg quanti
