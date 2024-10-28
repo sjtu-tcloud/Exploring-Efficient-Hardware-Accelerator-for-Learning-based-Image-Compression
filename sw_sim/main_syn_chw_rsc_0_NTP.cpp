@@ -28,10 +28,7 @@ int main( int argc, char *argv[])
 
 	FILE *fp;
 	int data_num;
-	char bfile_name[256];
-
 	assert(argc==3);
-	strncpy(bfile_name, argv[1], 256);
 
 	data_num = get_file_size(argv[2]);
 	int32_t *ana_IHW_OHW_set = (int32_t *)malloc(data_num);
@@ -44,28 +41,9 @@ int main( int argc, char *argv[])
 	}
 	free(ana_IHW_OHW_set);
 
-
 	int pad_space_size = 0;
 	int fm_max_size = 0;
 	for(int lnum = 0; lnum < LNUM; lnum++){
-//calc ifm/ofm width/height
-		// if(lnum==0){
-		// 	IW_set[lnum] = in_dim[1];
-		// 	IH_set[lnum] = in_dim[0];
-		// }else{
-		// 	IW_set[lnum] = OW_set[lnum-1];
-		// 	IH_set[lnum] = OH_set[lnum-1];
-		// }
-
-		// int ltype = LT_set[lnum];
-		// if(ltype==LT_CONVT){
-		// 	OW_set[lnum] = IW_set[lnum]*S_set[lnum] - KS_set[lnum] + 2*P_set[lnum] +1;
-		// 	OH_set[lnum] = IH_set[lnum]*S_set[lnum] - KS_set[lnum] + 2*P_set[lnum] +1;
-		// }else{
-		// 	OW_set[lnum] = (IW_set[lnum] - KS_set[lnum] + 2*P_set[lnum])/S_set[lnum] + 1;
-		// 	OH_set[lnum] = (IH_set[lnum] - KS_set[lnum] + 2*P_set[lnum])/S_set[lnum] + 1;
-		// }
-
 		int ifm_offset = IW_set[lnum]*IH_set[lnum]*LANE_ext(IF_NUM_set[lnum]);
 		int ofm_offset = OW_set[lnum]*OH_set[lnum]*LANE_ext(OF_NUM_set[lnum]);
 		if(lnum==0){
@@ -113,17 +91,10 @@ int main( int argc, char *argv[])
 	data_num = IH_set[0]*IW_set[0]*F_num;
 	float *tmp_in_buf = (float *)malloc(sizeof(float)*data_num);
 
-	fp = fopen(bfile_name, "rb");
+	fp = fopen(argv[1], "rb");
 	fread(tmp_in_buf, sizeof(float), data_num, fp);
 	fclose(fp);
-	printf("syn_input: %s, h_w_c= [%d, %d, %d]\n", bfile_name, IH_set[0], IW_set[0], F_num);
-
-	i32tof32_1d(tmp_in_buf, (int32_t *)tmp_in_buf, data_num);
-
-	float *syn_in_median = (float *)malloc(sizeof(float)*F_num);
-	read_binfile_flt32_rb(syn_in_median, "syn_in_median", F_num);
-	syn_add_channel_median_chw(tmp_in_buf, syn_in_median, IH_set[0], IW_set[0], F_num);
-	free(syn_in_median);
+	printf("syn_input: %s, h_w_c= [%d, %d, %d]\n", argv[1], IH_set[0], IW_set[0], F_num);
 
 	int img_c = F_num, img_h = IH_set[0], img_w = IW_set[0];
 	float *ifm_buf = fm_mem + IFM_offset[0];

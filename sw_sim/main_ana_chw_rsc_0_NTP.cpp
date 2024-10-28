@@ -293,18 +293,11 @@ int main( int argc, char *argv[])
 
 //save transformed img
 	data_num = F_num;
-	float *syn_in_median = (float *)malloc(sizeof(float)*data_num);
-	read_binfile_flt32_rb(syn_in_median, "syn_in_median", data_num);
-
 	data_num = OH_set[LNUM-1]*OW_set[LNUM-1]*F_num;
-	int32_t *ana_out = (int32_t *)malloc(sizeof(float)*data_num);
-	// ana_a05_sub_median_chw(ana_out, ofm_ptr, syn_in_median, OH_set[LNUM-1], OW_set[LNUM-1], F_num);
-	ana_a05_sub_median_chw(ana_out, ofm_tmp_buf, syn_in_median, OH_set[LNUM-1], OW_set[LNUM-1], F_num);
-	free(syn_in_median);
 
 	printf("ana_output: %s, h_w_c= [%d, %d, %d]\n\n", "ana_q_out_chw.bin", OH_set[LNUM-1], OW_set[LNUM-1], F_num);
 	fp = fopen("ana_q_out_chw.bin", "wb");
-	fwrite(ana_out, sizeof(int32_t), data_num, fp);
+	fwrite(ofm_tmp_buf, sizeof(float), data_num, fp);
 	fclose(fp);
 
 	fp = fopen("ana_IHW_OHW_set.bin", "wb");
@@ -314,7 +307,6 @@ int main( int argc, char *argv[])
 	fwrite(OW_set, sizeof(int32_t), LNUM, fp);
 	fclose(fp);	
 
-	free(ana_out);
 	free(fm_mem);
 	free(ofm_tmp_buf);
 
