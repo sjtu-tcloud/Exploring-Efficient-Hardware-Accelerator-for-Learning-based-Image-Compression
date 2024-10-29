@@ -43,7 +43,7 @@ And, processed weights in TPCV operator require a 180° reversal in kernel size 
 ## Quantization and SW-Sim
 After Model Extraction, weight/bias should be reordered to match the bitwidth of databus (Bit<sub>DB</sub>=Bit<sub>Data</sub>&times;N<sub>LN</sub>) or increase burst length. => **make gen_reorder_w_sk_f32c**
 
-**make test_as_rsc_f32c_NTP** just tests the extracted params and optimized-TPCV in **FT32** precision. Hardware/Software design params could be configured in sw_sim's **Makefile**.
+**make test_as_rsc_f32c_NTP** just tests the extracted params and optimized-TPCV in **FT32** precision. Hardware/Software design params (e.g., T*, P*) could be configured in sw_sim's **Makefile**.
 
 
 ```
@@ -103,9 +103,9 @@ We simplify the X-LIC flow and just reserve the FPGA part in this demo (skip the
 
 **img/abigail-keenan-27293.png (Left); img/recon_f32c.png (Right)**
 <div style="display: flex;">
-    <img src="img/abigail-keenan-27293.png" width="48%" alt="First Image"/> 
+    <img src="img/abigail-keenan-27293.png" width="45%" alt="First Image"/> 
     <div style="width: 2%;"></div>
-    <img src="img/recon_f32c.png" width="48%" alt="Second Image"/>
+    <img src="img/recon_f32c.png" width="45%" alt="Second Image"/>
 </div>
 
 ## HLS Design
