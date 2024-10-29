@@ -99,6 +99,15 @@ syn_2: ic_h_w= [128, 342, 512], oc_h_w= [3, 1365, 2048], w_aoffset=10368, bias_a
 save_png(s): 2.01311
 syn_output: recon_c.png, h_w_c= [1365, 2048, 3]
 ```
+We simplify the X-LIC flow and just reserve the FPGA part in this demo (skip the **Q/IQ** and **entropy coding** in codec). **ana_q_out_chw.bin** is the transformed **y** after encoder.
+
+**img/abigail-keenan-27293.png (Left); img/recon_f32c.png (Right)**
+<div style="display: flex;">
+    <img src="img/abigail-keenan-27293.png" width="48%" alt="First Image"/> 
+    <div style="width: 2%;"></div>
+    <img src="img/recon_f32c.png" width="48%" alt="Second Image"/>
+</div>
+
 ## HLS Design
 
 
