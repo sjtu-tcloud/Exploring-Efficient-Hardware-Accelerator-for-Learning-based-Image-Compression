@@ -587,6 +587,19 @@ void load_ifm_k_wrapper(float ifm_buf[Tnax_dx][MAX_IB_HW][LANE_NUM], int16_t k_b
     load_kernel_reorg(k_buf, kernel, m, n, TM_MIN, TN_MIN, K, KxK, kernel_scale, ifm_scale, sq_en);
 }
 
+template<typename T, int N>
+T adder_tree(T *data){
+// #pragma HLS INLINE
+    // Perform a non-recursive parallel reduction
+    for (int stride = 1; stride < N; stride *= 2){
+        for (int i = 0; i < N; i += 2 * stride){
+            T sum = data[i] + ((i + stride < N) ? data[i + stride] : 0);
+            data[i] = sum;
+        }
+    }
+    return data[0];
+}
+
 void Compute_wrapper_sub(float ifm_buf[Tnax_dx][MAX_IB_HW][LANE_NUM], float ofm_buf[Tmax_dx][MAX_Trc][LANE_NUM],
                     int16_t k_buf[Tmax_dx][MAX_Tif][MAX_KxK][LANE_NUM],
                     uint8_t Ky, uint8_t Kx, uint16_t TR_MIN, uint16_t TC_MIN, uint8_t c_stride, uint16_t TCol, uint32_t ifm_offset, bool init_en,
@@ -619,7 +632,7 @@ void Compute_wrapper_sub(float ifm_buf[Tnax_dx][MAX_IB_HW][LANE_NUM], float ofm_
 
                 for(int tn = 0;tn < MAX_Tif; tn++)
                 {
-                    assert(ifm_idx < MAX_IB_HW);
+                    // assert(ifm_idx < MAX_IB_HW);
                     // partial_add[tm][tn] = k_buf[tm][tn][k_idx]*ifm_buf[tn][ifm_idx];
 					int16_t w_16i = k_buf[tm/LANE_NUM][tn][k_idx][tm%LANE_NUM];
 					int16_t ifm_16i = ifm_buf[tn/LANE_NUM][ifm_idx][tn%LANE_NUM]*tmp_exp_ifm;
@@ -633,13 +646,17 @@ void Compute_wrapper_sub(float ifm_buf[Tnax_dx][MAX_IB_HW][LANE_NUM], float ofm_
                 {
                     partial_sum[tm] += partial_add[tm][tn];
                 }
-                // ofm_buf[tm][ofm_idx] = partial_sum[tm];
                 ofm_buf[tm/LANE_NUM][ofm_idx][tm%LANE_NUM] = i2f32(partial_sum[tm]);
+
+                // int32_t psum_total = adder_tree<int32_t, (MAX_Tif)>(partial_add[tm]);
+                // ofm_buf[tm/LANE_NUM][ofm_idx][tm%LANE_NUM] = i2f32(psum_total + partial_sum[tm]);
             }
         }
     }else{
         float partial_sum[MAX_Tof];
         float partial_add[MAX_Tof][MAX_Tif];
+
+        float tmp_exp_k = pow(0.5, 14);
 
         for(uint8_t ky=0; ky<Ky; ky++)
         for(uint8_t kx=0; kx<Kx; kx++)
@@ -660,9 +677,9 @@ void Compute_wrapper_sub(float ifm_buf[Tnax_dx][MAX_IB_HW][LANE_NUM], float ofm_
 
                 for(int tn = 0;tn < MAX_Tif; tn++)
                 {
-                    assert(ifm_idx < MAX_IB_HW);
+                    // assert(ifm_idx < MAX_IB_HW);
                     // partial_add[tm][tn] = k_buf[tm][tn][k_idx]*ifm_buf[tn][ifm_idx];
-                    float k_cur = k_buf[tm/LANE_NUM][tn][k_idx][tm%LANE_NUM]*pow(0.5, 14);
+                    float k_cur = k_buf[tm/LANE_NUM][tn][k_idx][tm%LANE_NUM]*tmp_exp_k;
                     partial_add[tm][tn] = k_cur*ifm_buf[tn/LANE_NUM][ifm_idx][tn%LANE_NUM];
                 }
 
@@ -670,8 +687,10 @@ void Compute_wrapper_sub(float ifm_buf[Tnax_dx][MAX_IB_HW][LANE_NUM], float ofm_
                 {
                     partial_sum[tm] += partial_add[tm][tn];
                 }
-                // ofm_buf[tm][ofm_idx] = partial_sum[tm];
                 ofm_buf[tm/LANE_NUM][ofm_idx][tm%LANE_NUM] = partial_sum[tm];
+
+                // float psum_total = adder_tree<float, (MAX_Tif)>(partial_add[tm]);
+                // ofm_buf[tm/LANE_NUM][ofm_idx][tm%LANE_NUM] = psum_total + partial_sum[tm];
             }
         }
 

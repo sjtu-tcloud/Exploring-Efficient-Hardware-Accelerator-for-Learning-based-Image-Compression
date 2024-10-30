@@ -111,6 +111,8 @@ We simplify the X-LIC flow and just reserve the FPGA part in this demo (skip the
 ### INT16-Simulation
 We would further optimize the flow. Generated image is stored as **img/recon_i16c.png**.
 
+**make gen_reorder_w_sk_f32c** 
+
 **make gen_iofm_sk_i16c**
 
 **make gen_reorder_w_sk_i16c_scale**
@@ -125,6 +127,29 @@ We would further optimize the flow. Generated image is stored as **img/recon_i16
 
 **make test_as_rsc_i16c_NTP**
 ```
+X-LIC/sw_sim$ make gen_reorder_w_sk_f32c 
+g++ -O3 -w -o test_reorder weight_reorder_sk_f32c.cpp -I . -lm
+./test_reorder  8 8 64
+ana_0: ic,oc= [3, 128], data_num =    31104, add_offset = 0.
+gdn_0: ic,oc= [128, 128], data_num =    16384, add_offset = 0.
+ana_1: ic,oc= [128, 128], data_num =   409600, add_offset = 0.
+gdn_1: ic,oc= [128, 128], data_num =    16384, add_offset = 0.
+ana_2: ic,oc= [128, 128], data_num =   409600, add_offset = 0.
+bias[ 0] data_num=  128.
+bias[ 1] data_num=  128.
+bias[ 2] data_num=  128.
+bias[ 3] data_num=  128.
+syn_0: ic,oc= [128, 128], data_num =   409600, add_offset = 0.
+igdn_0: ic,oc= [128, 128], data_num =    16384, add_offset = 0.
+syn_1: ic,oc= [128, 128], data_num =   409600, add_offset = 0.
+igdn_1: ic,oc= [128, 128], data_num =    16384, add_offset = 0.
+syn_2: ic,oc= [128, 3], data_num =    31104, add_offset = 51840.
+bias[ 0] data_num=  128.
+bias[ 1] data_num=  128.
+bias[ 2] data_num=  128.
+bias[ 3] data_num=  128.
+bias[ 4] data_num=    3, add 5.
+
 X-LIC/sw_sim$ make gen_iofm_sk_i16c
 g++ -O3 -w -o test_ana main_ana_chw_rsc_0_1.cpp -I . -lm -D MAX_Pif=4 -D MAX_Pof=64 -D MAX_Poy=1 -D MAX_Pox=2 -D MAX_S=4 -D MAX_K=9 -D MAX_Tif=8 -D MAX_Tof=64 -D MAX_Tr=24 -D MAX_Tc=24 -D MAX_BETA_LENGTH=128 -D LANE_NUM=8 -D _DEF_IN_MAKEFILE_
 g++ -O3 -w -o test_syn main_syn_chw_rsc_0_1.cpp -I . -lm -D MAX_Pif=4 -D MAX_Pof=64 -D MAX_Poy=1 -D MAX_Pox=2 -D MAX_S=4 -D MAX_K=9 -D MAX_Tif=8 -D MAX_Tof=64 -D MAX_Tr=24 -D MAX_Tc=24 -D MAX_BETA_LENGTH=128 -D LANE_NUM=8 -D _DEF_IN_MAKEFILE_
@@ -286,10 +311,6 @@ read bias byte_num = 2048
 5
 5
 [0]: diff max= 0.0000000000, diff sum = 0.0000000
-[1]: diff max= 0.0005493164, diff sum = 698.9813843
-[2]: diff max= 0.0009765625, diff sum = 1681.5447998
-[3]: diff max= 0.0021972656, diff sum = 3626.6309204
-[4]: diff max= 0.0050659180, diff sum = 7568.9780273
 [Q=0]: diff max= 0.0000000000, diff sum_min = 0.0000000
 maxQ = 28
 [0]: diff max= 2.0399169922, diff sum = 128657.1503296
@@ -297,29 +318,17 @@ maxQ = 28
 [2]: diff max= 0.0000610352, diff sum = 5.2509155
 [3]: diff max= 0.0000610352, diff sum = 14.0045166
 [4]: diff max= 0.0000610352, diff sum = 32.8590088
-[5]: diff max= 0.0000610352, diff sum = 71.7180176
-[6]: diff max= 0.0000610352, diff sum = 150.3399658
 [Q=2]: diff max= 0.0000610352, diff sum_min = 5.2509155
-ana_0: ic_h_w= [3, 1365, 2048], oc_h_w= [128, 342, 512], w_aoffset=0, bias_aoffset=0, ifm_sqQ=0, interQ=2, lat= 368.38460
+ana_0: ic_h_w= [3, 1365, 2048], oc_h_w= [128, 342, 512], w_aoffset=0, bias_aoffset=0, ifm_sqQ=0, interQ=2, lat= 175.67557
 [0]: diff max= 0.0000000000, diff sum = 0.0000000
-[1]: diff max= 0.0008544922, diff sum = 278.6452026
-[2]: diff max= 0.0018920898, diff sum = 835.9694214
-[3]: diff max= 0.0045776367, diff sum = 1951.8322144
-[4]: diff max= 0.0097045898, diff sum = 4184.6965942
 [Q=0]: diff max= 0.0000000000, diff sum_min = 0.0000000
 maxQ = 28
 [0]: diff max= 0.0000610352, diff sum = 0.0320435
 [1]: diff max= 0.0000610352, diff sum = 0.0587769
 [2]: diff max= 0.0000610352, diff sum = 0.2025757
-[3]: diff max= 0.0000610352, diff sum = 0.5545044
-[4]: diff max= 0.0000610352, diff sum = 1.3073120
 [Q=0]: diff max= 0.0000610352, diff sum_min = 0.0320435
-gdn_0: ic_h_w= [128, 342, 512], oc_h_w= [128, 342, 512], w_aoffset=0, bias_aoffset=0, ifm_sqQ=0, interQ=0, lat= 74.02856
+gdn_0: ic_h_w= [128, 342, 512], oc_h_w= [128, 342, 512], w_aoffset=0, bias_aoffset=0, ifm_sqQ=0, interQ=0, lat= 29.58518
 [0]: diff max= 0.0000000000, diff sum = 0.0000000
-[1]: diff max= 0.0006103516, diff sum = 199.6190796
-[2]: diff max= 0.0014648438, diff sum = 498.6394043
-[3]: diff max= 0.0029907227, diff sum = 1088.1786499
-[4]: diff max= 0.0070800781, diff sum = 2263.8557739
 [Q=0]: diff max= 0.0000000000, diff sum_min = 0.0000000
 maxQ = 28
 [0]: diff max= 2.0097656250, diff sum = 226556.3305664
@@ -327,39 +336,25 @@ maxQ = 28
 [2]: diff max= 0.0000610352, diff sum = 11.5545044
 [3]: diff max= 0.0000610352, diff sum = 31.6536865
 [4]: diff max= 0.0000610352, diff sum = 74.7495728
-[5]: diff max= 0.0001220703, diff sum = 163.7145996
-[6]: diff max= 0.0002441406, diff sum = 344.7271729
 [Q=2]: diff max= 0.0000610352, diff sum_min = 11.5545044
-ana_1: ic_h_w= [128, 342, 512], oc_h_w= [128, 171, 256], w_aoffset=0, bias_aoffset=0, ifm_sqQ=0, interQ=2, lat= 431.24451
+ana_1: ic_h_w= [128, 342, 512], oc_h_w= [128, 171, 256], w_aoffset=0, bias_aoffset=0, ifm_sqQ=0, interQ=2, lat= 203.98294
 [0]: diff max= 0.0000000000, diff sum = 0.0000000
-[1]: diff max= 0.0003662109, diff sum = 37.6287842
-[2]: diff max= 0.0009765625, diff sum = 112.9432983
-[3]: diff max= 0.0020751953, diff sum = 263.5299683
-[4]: diff max= 0.0045776367, diff sum = 565.2826538
 [Q=0]: diff max= 0.0000000000, diff sum_min = 0.0000000
 maxQ = 28
 [0]: diff max= 0.0000610352, diff sum = 0.0070801
 [1]: diff max= 0.0000610352, diff sum = 0.0090332
 [2]: diff max= 0.0000610352, diff sum = 0.0249634
-[3]: diff max= 0.0000610352, diff sum = 0.0661621
-[4]: diff max= 0.0000610352, diff sum = 0.1656494
 [Q=0]: diff max= 0.0000610352, diff sum_min = 0.0070801
-gdn_1: ic_h_w= [128, 171, 256], oc_h_w= [128, 171, 256], w_aoffset=0, bias_aoffset=0, ifm_sqQ=0, interQ=0, lat= 18.54903
+gdn_1: ic_h_w= [128, 171, 256], oc_h_w= [128, 171, 256], w_aoffset=0, bias_aoffset=0, ifm_sqQ=0, interQ=0, lat= 7.40458
 [0]: diff max= 0.0000000000, diff sum = 0.0000000
-[1]: diff max= 0.0004272461, diff sum = 57.2335205
-[2]: diff max= 0.0010986328, diff sum = 142.0036011
-[3]: diff max= 0.0022583008, diff sum = 308.8721313
-[4]: diff max= 0.0042724609, diff sum = 640.6303711
 [Q=0]: diff max= 0.0000000000, diff sum_min = 0.0000000
 maxQ = 28
 [0]: diff max= 1.8496704102, diff sum = 3372.7151489
 [1]: diff max= 1.8884277344, diff sum = 3428.9366455
 [2]: diff max= 0.0000610352, diff sum = 5.9623413
 [3]: diff max= 0.0000610352, diff sum = 16.4709473
-[4]: diff max= 0.0001220703, diff sum = 38.8663330
-[5]: diff max= 0.0001831055, diff sum = 85.1210938
 [Q=2]: diff max= 0.0000610352, diff sum_min = 5.9623413
-ana_2: ic_h_w= [128, 171, 256], oc_h_w= [128, 86, 128], w_aoffset=0, bias_aoffset=0, ifm_sqQ=0, interQ=2, lat= 98.66493
+ana_2: ic_h_w= [128, 171, 256], oc_h_w= [128, 86, 128], w_aoffset=0, bias_aoffset=0, ifm_sqQ=0, interQ=2, lat= 42.56671
 ana_output: ana_q_out_chw.bin, h_w_c= [86, 128, 128]
 ./test_syn ana_q_out_chw.bin ana_IHW_OHW_set.bin
 ana_IHW_OHW_set.bin's data size is 80
@@ -373,77 +368,47 @@ read bias byte_num = 2080
 5
 syn_input: ana_q_out_chw.bin, h_w_c= [86, 128, 128]
 [0]: diff max= 0.0000000000, diff sum = 0.0000000
-[1]: diff max= 0.0003051758, diff sum = 222.2032471
-[2]: diff max= 0.0007324219, diff sum = 585.6014404
-[3]: diff max= 0.0015869141, diff sum = 1308.3878174
-[4]: diff max= 0.0033569336, diff sum = 2746.6947021
 [Q=0]: diff max= 0.0000000000, diff sum_min = 0.0000000
 maxQ = 28
 [0]: diff max= 0.0000610352, diff sum = 0.3058472
 [1]: diff max= 0.0000610352, diff sum = 2.2216187
 [2]: diff max= 0.0000610352, diff sum = 8.8909302
-[3]: diff max= 0.0000610352, diff sum = 24.4157104
-[4]: diff max= 0.0000610352, diff sum = 57.8325195
 [Q=0]: diff max= 0.0000610352, diff sum_min = 0.3058472
-syn_0: ic_h_w= [128, 86, 128], oc_h_w= [128, 171, 256], w_aoffset=0, bias_aoffset=0, lat= 88.04248
+syn_0: ic_h_w= [128, 86, 128], oc_h_w= [128, 171, 256], w_aoffset=0, bias_aoffset=0, lat= 34.44329
 [0]: diff max= 0.0000000000, diff sum = 0.0000000
-[1]: diff max= 0.0002441406, diff sum = 24.1046143
-[2]: diff max= 0.0006103516, diff sum = 72.2500000
-[3]: diff max= 0.0014038086, diff sum = 168.5154419
-[4]: diff max= 0.0030517578, diff sum = 360.7451782
 [Q=0]: diff max= 0.0000000000, diff sum_min = 0.0000000
 maxQ = 28
 [0]: diff max= 1.5436401367, diff sum = 4.1611328
 [1]: diff max= 0.0000610352, diff sum = 0.0125122
 [2]: diff max= 0.0000610352, diff sum = 0.0362549
 [3]: diff max= 0.0000610352, diff sum = 0.0939941
-[4]: diff max= 0.0000610352, diff sum = 0.2243042
-[5]: diff max= 0.0000610352, diff sum = 0.4747314
 [Q=1]: diff max= 0.0000610352, diff sum_min = 0.0125122
-igdn_0: ic_h_w= [128, 171, 256], oc_h_w= [128, 171, 256], w_aoffset=0, bias_aoffset=0, lat= 20.25922
+igdn_0: ic_h_w= [128, 171, 256], oc_h_w= [128, 171, 256], w_aoffset=0, bias_aoffset=0, lat= 9.20414
 [0]: diff max= 0.0000000000, diff sum = 0.0000000
-[1]: diff max= 0.0003662109, diff sum = 752.3333740
-[2]: diff max= 0.0009155273, diff sum = 1993.3098145
-[3]: diff max= 0.0019531250, diff sum = 4455.6995239
-[4]: diff max= 0.0040893555, diff sum = 9373.9097900
 [Q=0]: diff max= 0.0000000000, diff sum_min = 0.0000000
 maxQ = 28
 [0]: diff max= 0.0000610352, diff sum = 1.2369385
 [1]: diff max= 0.0000610352, diff sum = 7.6309814
 [2]: diff max= 0.0000610352, diff sum = 30.2238159
-[3]: diff max= 0.0000610352, diff sum = 83.1235352
-[4]: diff max= 0.0000610352, diff sum = 196.3587036
 [Q=0]: diff max= 0.0000610352, diff sum_min = 1.2369385
-syn_1: ic_h_w= [128, 171, 256], oc_h_w= [128, 342, 512], w_aoffset=0, bias_aoffset=0, lat= 352.03317
+syn_1: ic_h_w= [128, 171, 256], oc_h_w= [128, 342, 512], w_aoffset=0, bias_aoffset=0, lat= 137.19182
 [0]: diff max= 0.0000000000, diff sum = 0.0000000
-[1]: diff max= 0.0002441406, diff sum = 128.9521484
-[2]: diff max= 0.0006713867, diff sum = 387.1781006
-[3]: diff max= 0.0014038086, diff sum = 903.1717529
-[4]: diff max= 0.0031127930, diff sum = 1934.1359253
 [Q=0]: diff max= 0.0000000000, diff sum_min = 0.0000000
 maxQ = 28
 [0]: diff max= 0.0000610352, diff sum = 0.0343018
 [1]: diff max= 0.0000610352, diff sum = 0.0425415
 [2]: diff max= 0.0000610352, diff sum = 0.1174316
-[3]: diff max= 0.0000610352, diff sum = 0.3207397
-[4]: diff max= 0.0000610352, diff sum = 0.7469482
 [Q=0]: diff max= 0.0000610352, diff sum_min = 0.0343018
-igdn_1: ic_h_w= [128, 342, 512], oc_h_w= [128, 342, 512], w_aoffset=0, bias_aoffset=0, lat= 74.02310
+igdn_1: ic_h_w= [128, 342, 512], oc_h_w= [128, 342, 512], w_aoffset=0, bias_aoffset=0, lat= 29.76992
 [0]: diff max= 0.0000000000, diff sum = 0.0000000
-[1]: diff max= 0.0001831055, diff sum = 88.9296875
-[2]: diff max= 0.0004272461, diff sum = 229.4660034
-[3]: diff max= 0.0009155273, diff sum = 507.8545532
-[4]: diff max= 0.0020141602, diff sum = 1064.4729614
 [Q=0]: diff max= 0.0000000000, diff sum_min = 0.0000000
 maxQ = 28
 [0]: diff max= 0.0000610352, diff sum = 0.4697266
 [1]: diff max= 0.0000610352, diff sum = 0.8714600
 [2]: diff max= 0.0000610352, diff sum = 3.0908203
-[3]: diff max= 0.0000610352, diff sum = 8.4802246
-[4]: diff max= 0.0000610352, diff sum = 20.0704346
 [Q=0]: diff max= 0.0000610352, diff sum_min = 0.4697266
-syn_2: ic_h_w= [128, 342, 512], oc_h_w= [3, 1365, 2048], w_aoffset=51840, bias_aoffset=5, lat= 2203.82901
-save_png(s): 0.95702
+syn_2: ic_h_w= [128, 342, 512], oc_h_w= [3, 1365, 2048], w_aoffset=51840, bias_aoffset=5, lat= 854.40238
+save_png(s): 0.96162
 syn_output: recon_c.png, h_w_c= [1365, 2048, 3]
 
 X-LIC/sw_sim$ make test_interQ_sk_i16c

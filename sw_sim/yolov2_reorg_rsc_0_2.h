@@ -979,7 +979,7 @@ int diff_set(T *in0, T *in1, int data_num, double err_max, int idx, bool init_en
         diff_max_min = diff_max;          
     }
 
-    bool prv_exit = (prv_exit_val==4);
+    bool prv_exit = (prv_exit_val==2) || (diff_sum < 1e-10);
     if(prv_exit){
         *prv_exit_en = 1;
     }
