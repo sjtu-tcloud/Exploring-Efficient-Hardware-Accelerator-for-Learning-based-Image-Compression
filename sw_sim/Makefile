@@ -20,11 +20,35 @@ CFLAGS += -D MAX_Tr=$(MAX_Tr) -D MAX_Tc=$(MAX_Tc) -D MAX_BETA_LENGTH=$(MAX_BETA_
 CFLAGS += -D LANE_NUM=$(LANE_NUM)
 CFLAGS += -D _DEF_IN_MAKEFILE_
 
+test_as_rsc_i16c_NTP:
+	g++ -O3 -w -o test_ana main_ana_chw_rsc_0_4_NTP.cpp -I . -lm $(CFLAGS)
+	g++ -O3 -w -o test_syn main_syn_chw_rsc_0_4_NTP.cpp -I . -lm $(CFLAGS)
+	./test_ana ../img/abigail-keenan-27293.png
+	./test_syn ana_q_out_chw.bin ana_IHW_OHW_set.bin
+
+test_interQ_sk_i16c_sr_cb:
+	g++ -O3 -w -o test_ana main_ana_chw_rsc_0_4_srcb.cpp -I . -lm $(CFLAGS)
+	g++ -O3 -w -o test_syn main_syn_chw_rsc_0_4_srcb.cpp -I . -lm $(CFLAGS)
+	./test_ana ../img/abigail-keenan-27293.png
+	./test_syn ana_q_out_chw.bin ana_IHW_OHW_set.bin
+
+test_interQ_sk_i16c:
+	g++ -O3 -w -o test_ana main_ana_chw_rsc_0_4.cpp -I . -lm $(CFLAGS)
+	g++ -O3 -w -o test_syn main_syn_chw_rsc_0_4.cpp -I . -lm $(CFLAGS)
+	./test_ana ../img/abigail-keenan-27293.png
+	./test_syn ana_q_out_chw.bin ana_IHW_OHW_set.bin
+
+gen_interQ_sk_i16c:
+	g++ -O3 -w -o test_ana main_ana_chw_rsc_0_3.cpp -I . -lm $(CFLAGS)
+	g++ -O3 -w -o test_syn main_syn_chw_rsc_0_3.cpp -I . -lm $(CFLAGS)
+	./test_ana ../img/abigail-keenan-27293.png
+	./test_syn ana_q_out_chw.bin ana_IHW_OHW_set.bin
+
 test_iofm_reorder_w_sk_i16c:
 	g++ -O3 -w -o test_ana main_ana_chw_rsc_0_2.cpp -I . -lm $(CFLAGS)
 	g++ -O3 -w -o test_syn main_syn_chw_rsc_0_2.cpp -I . -lm $(CFLAGS)
-	./test_ana penn-st-michigan-foot_cham1280720-720p.jpg
-	./test_syn ana_q_out_chw.bin 45 80
+	./test_ana ../img/abigail-keenan-27293.png
+	./test_syn ana_q_out_chw.bin ana_IHW_OHW_set.bin
 
 gen_reorder_w_sk_i16c_scale:
 	g++ -O3 -w -o test_reorder weight_reorder_sk_i16c_scale.cpp -I . -lm
@@ -33,9 +57,10 @@ gen_reorder_w_sk_i16c_scale:
 gen_iofm_sk_i16c:
 	g++ -O3 -w -o test_ana main_ana_chw_rsc_0_1.cpp -I . -lm $(CFLAGS)
 	g++ -O3 -w -o test_syn main_syn_chw_rsc_0_1.cpp -I . -lm $(CFLAGS)
-	./test_ana penn-st-michigan-foot_cham1280720-720p.jpg
-	./test_syn ana_q_out_chw.bin 45 80
+	./test_ana ../img/abigail-keenan-27293.png
+	./test_syn ana_q_out_chw.bin ana_IHW_OHW_set.bin
 
+#f32c start######################################################################################
 test_as_rsc_f32c_NTP:
 	g++ -O3 -w -o test_ana main_ana_chw_rsc_0_NTP.cpp -I . -lm $(CFLAGS)
 	g++ -O3 -w -o test_syn main_syn_chw_rsc_0_NTP.cpp -I . -lm $(CFLAGS)
@@ -45,6 +70,7 @@ test_as_rsc_f32c_NTP:
 gen_reorder_w_sk_f32c:
 	g++ -O3 -w -o test_reorder weight_reorder_sk_f32c.cpp -I . -lm
 	./test_reorder	$(LANE_NUM) $(MAX_Tif) $(MAX_Tof)
+#f32c end########################################################################################
 
 clean:
 	rm -rf *.png
