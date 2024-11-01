@@ -3,16 +3,16 @@ MAX_S=4
 MAX_K=9
 MAX_BETA_LENGTH=128
 
-MAX_Tif=8
-MAX_Tof=64
+MAX_Tif=16
+MAX_Tof=32
 MAX_Tr=24
 MAX_Tc=24
 LANE_NUM=8
 
-MAX_Pif=4
-MAX_Pof=64
+MAX_Pif=16
+MAX_Pof=4
 MAX_Poy=1
-MAX_Pox=2
+MAX_Pox=16
 
 CFLAGS += -D MAX_Pif=$(MAX_Pif) -D MAX_Pof=$(MAX_Pof) -D MAX_Poy=$(MAX_Poy) -D MAX_Pox=$(MAX_Pox)
 CFLAGS += -D MAX_S=$(MAX_S) -D MAX_K=$(MAX_K) -D MAX_Tif=$(MAX_Tif) -D MAX_Tof=$(MAX_Tof)
@@ -20,17 +20,17 @@ CFLAGS += -D MAX_Tr=$(MAX_Tr) -D MAX_Tc=$(MAX_Tc) -D MAX_BETA_LENGTH=$(MAX_BETA_
 CFLAGS += -D LANE_NUM=$(LANE_NUM)
 CFLAGS += -D _DEF_IN_MAKEFILE_
 
+gen_all: gen_reorder_w_sk_f32c gen_iofm_sk_i16c gen_reorder_w_sk_i16c_scale gen_interQ_sk_i16c gen_w_sr_cb 
+
 test_as_rsc_i16c_NTP:
 	g++ -O3 -w -o test_ana main_ana_chw_rsc_0_4_NTP.cpp -I . -lm $(CFLAGS)
 	g++ -O3 -w -o test_syn main_syn_chw_rsc_0_4_NTP.cpp -I . -lm $(CFLAGS)
 	./test_ana ../img/abigail-keenan-27293.png
 	./test_syn ana_q_out_chw.bin ana_IHW_OHW_set.bin
 
-test_interQ_sk_i16c_sr_cb:
-	g++ -O3 -w -o test_ana main_ana_chw_rsc_0_4_srcb.cpp -I . -lm $(CFLAGS)
-	g++ -O3 -w -o test_syn main_syn_chw_rsc_0_4_srcb.cpp -I . -lm $(CFLAGS)
-	./test_ana ../img/abigail-keenan-27293.png
-	./test_syn ana_q_out_chw.bin ana_IHW_OHW_set.bin
+gen_w_sr_cb:
+	g++ -O3 -w -o test_ana gen_w_sr_cb.cpp -I . -lm $(CFLAGS)
+	./test_ana
 
 test_interQ_sk_i16c:
 	g++ -O3 -w -o test_ana main_ana_chw_rsc_0_4.cpp -I . -lm $(CFLAGS)

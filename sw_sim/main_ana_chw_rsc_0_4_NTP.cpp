@@ -352,8 +352,6 @@ int main( int argc, char *argv[])
 		ifm_num, ih, iw, ofm_num, oh, ow, w_aoffset[lnum], bias_aoffset[lnum], ifm_sqQ, interQ, time2 - time1);
 	}
 
-	// ofm_Scale_ptr = ofm_Scale_ptr - LANE_ext(OF_NUM_set[LNUM-1]);
-
 	float tmp_pow_out = pow(0.5, 14);
 	data_num = OH_set[LNUM-1]*OW_set[LNUM-1]*OF_NUM_set[LNUM-1];
 	float *ofm_tmp_buf = (float *)malloc(sizeof(float)*data_num);
@@ -368,7 +366,6 @@ int main( int argc, char *argv[])
 	}
 
 //save transformed img
-
 	data_num = OH_set[LNUM-1]*OW_set[LNUM-1]*F_num;
 	printf("ana_output: %s, h_w_c= [%d, %d, %d]\n", "ana_q_out_chw.bin", OH_set[LNUM-1], OW_set[LNUM-1], F_num);
 	fp = fopen("ana_q_out_chw.bin", "wb");

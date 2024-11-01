@@ -987,6 +987,12 @@ int diff_set(T *in0, T *in1, int data_num, double err_max, int idx, bool init_en
 
 #include "acc_new_rsc_4_3.h"
 
+void w_sr(int16_t *data, int data_num, int8_t sr_bit){
+    for(int x=0; x<data_num; x++){
+        data[x] = data[x] >> sr_bit;
+    }
+}
+
 int quantize_ifm_i16c_scale(float *in,float *out,int wh_num, int c_num, int lane_num, float *scale_array)
 {
 

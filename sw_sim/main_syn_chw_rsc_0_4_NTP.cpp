@@ -355,25 +355,20 @@ int main( int argc, char *argv[])
 		ifm_num, ih, iw, ofm_num, oh, ow, w_aoffset[lnum], bias_aoffset[lnum], time2 - time1);
 	}
 
-	// ofm_Scale_ptr = ofm_Scale_ptr - LANE_ext(OF_NUM_set[LNUM-1]);
-
 	data_num = OH_set[LNUM-1]*OW_set[LNUM-1]*OF_NUM_set[LNUM-1];
-	// printf("here?1, data_num=%d\n", data_num);
 	float *ofm_tmp_buf = (float *)malloc(sizeof(float)*data_num);
-	// printf("here?1-0\n");
 	int ofm_w = OW_set[LNUM-1];
 	int ofm_h = OH_set[LNUM-1];
 	int ofm_c = OF_NUM_set[LNUM-1];
 
 	float tmp_pow_out = pow(0.5, 14);
-	// printf("here?1-2, w_h_c = [%d, %d, %d]\n", ofm_w, ofm_h, ofm_c);
 	for(int oc=0; oc<ofm_c;oc++)
 	for(int oh=0; oh<ofm_h;oh++)
 	for(int ow=0; ow<ofm_w;ow++){
 		ofm_tmp_buf[oc*ofm_h*ofm_w + oh*ofm_w + ow] = ofm_ptr[((oc/LANE_NUM)*ofm_h*ofm_w + oh*ofm_w + ow)*LANE_NUM + (oc & (LANE_NUM-1))]
 							*tmp_pow_out*ofm_scale_last_buf[(oc/LANE_NUM)*LANE_NUM + (oc & (LANE_NUM-1))];
 	}
-	// printf("here?2\n");
+
 	time1 = what_time_is_it_now();
 	save_image_png_chw(ofm_tmp_buf, OH_set[LNUM-1], OW_set[LNUM-1], 3, "recon_c");
 	time2 = what_time_is_it_now();

@@ -9,12 +9,6 @@
 #include <sys/time.h>
 #include "yolov2_reorg_rsc_0.h"
 
-//synthesis
-//layer_0 CONV_transpose/upsampel-conv, in:(1x86x128x128) NHWC; out:(1,172,256,128) NHWC; Bias(128,); Kernel_after_T:(5,5,128,128) KKNM
-// P=2, S=2; OH,OW = IH*S, IW*S;  (default in signal_conv.py) if self.extra_pad_end:  s *= self.strides_up[i]
-//     if self.extra_pad_end: get_length = lambda l, s, k, p: l * s + ((k - 1) - p)
-//maybe OHW = (IHW*S + 2P -K)/1 + 1
-
 int main( int argc, char *argv[])
 {
 	const uint32_t F_num = 128;
@@ -53,7 +47,7 @@ int main( int argc, char *argv[])
 	for(int lnum = 0; lnum < LNUM; lnum++){
 		ifm_channel_num = ifm_channel_num + LANE_ext(IF_NUM_set[lnum]);
 		ofm_channel_num = ofm_channel_num + LANE_ext(OF_NUM_set[lnum]);
-//calc ifm/ofm width/height
+
 		int ifm_offset = IW_set[lnum]*IH_set[lnum]*LANE_ext(IF_NUM_set[lnum]);
 		int ofm_offset = OW_set[lnum]*OH_set[lnum]*LANE_ext(OF_NUM_set[lnum]);
 		if(lnum==0){
@@ -89,19 +83,22 @@ int main( int argc, char *argv[])
 
 	data_num = get_file_size("syn_kernel_w_T_f32rc.bin");
 	float *kernel_w = (float *)malloc(data_num);
-	printf("read weight byte_num = %d\n", read_binfile_flt32_rb((float *)kernel_w, "syn_kernel_w_T_f32rc.bin", data_num/4));
+	read_binfile_flt32_rb((float *)kernel_w, "syn_kernel_w_T_f32rc.bin", data_num/4);
+	// printf("read weight byte_num = %d\n", read_binfile_flt32_rb((float *)kernel_w, "syn_kernel_w_T_f32rc.bin", data_num/4));
 
 	data_num = get_file_size("syn_bias_f32c.bin");
 	float *bias = (float *)malloc(data_num);
-	printf("%d\n", read_binfile_flt32_rb((float *)bias, "syn_bias_f32c.bin", data_num/4));
-	printf("read bias byte_num = %d\n", data_num);
+	read_binfile_flt32_rb((float *)bias, "syn_bias_f32c.bin", data_num/4);
+	// printf("%d\n", read_binfile_flt32_rb((float *)bias, "syn_bias_f32c.bin", data_num/4));
+	// printf("read bias byte_num = %d\n", data_num);
 
-	// uint32_t LNUM = 23;
 	int w_aoffset[LNUM];
-	printf("%d\n", read_binfile_flt32_rb((float*)w_aoffset, "syn_kernel_w_T_f32rc_oadd.bin", LNUM));
+	read_binfile_flt32_rb((float*)w_aoffset, "syn_kernel_w_T_f32rc_oadd.bin", LNUM);
+	// printf("%d\n", read_binfile_flt32_rb((float*)w_aoffset, "syn_kernel_w_T_f32rc_oadd.bin", LNUM));
 
 	int bias_aoffset[LNUM];
-	printf("%d\n", read_binfile_flt32_rb((float*)bias_aoffset, "syn_bias_f32c_oadd.bin", LNUM));
+	read_binfile_flt32_rb((float*)bias_aoffset, "syn_bias_f32c_oadd.bin", LNUM);
+	// printf("%d\n", read_binfile_flt32_rb((float*)bias_aoffset, "syn_bias_f32c_oadd.bin", LNUM));
 
 	float *inout_fixed_buf = (float *)calloc(sizeof(float), fm_max_size_single);
 
@@ -291,18 +288,12 @@ int main( int argc, char *argv[])
 		ofm_ptr = fm_mem + OFM_offset[lnum];
 
 		quantize_ifm_i16c_scale(ifm_ptr, inout_fixed_buf, ih*iw, ifm_num, LANE_NUM, ifm_Scale_ptr);
-		// memcpy(ifm_ptr,inout_fixed_buf, ih*iw*LANE_ext(ifm_num)*sizeof(float));
-
-		// printf("%s: ic_h_w= [%d, %d, %d], oc_h_w= [%d, %d, %d], k=%d, s=%d, h_pad=%d, w_pad=%d, pad=%d\n", LN_s[lnum],
-		// ifm_num, ih, iw, ofm_num, oh, ow, ksize, kstride, h_pad, w_pad, pad);
-		// IC_codec(ofm_ptr, ifm_ptr, kernel_w_ptr, bias_ptr, ifm_num, ih, iw, ofm_num, oh, ow, pad, ksize, kstride, ltype, bias_en);
 
 		IC_codec(ofm_ptr, ifm_ptr, kernel_w_ptr, bias_ptr, ifm_num, ih, iw, ofm_num, oh, ow, pad, ksize, kstride, ltype,
 					p_stride, c_stride, wb_mode, ps_sf_bit, ps_mask, sq_en, TR, TC, TM, TN, OHW, KxK,
                  	IHxIW, p_stridexIR, p_stridexIC, bias_en, NToy, NTox, NTof, NTcomb, NTif, lmode, NTcomb_l);
 
 		quantize_ifm_i16c_scale(ofm_ptr, inout_fixed_buf, oh*ow, ofm_num, LANE_NUM, ofm_Scale_ptr);
-		// memcpy(ofm_ptr,inout_fixed_buf, oh*ow*LANE_ext(ofm_num)*sizeof(float));
 
 		ifm_Scale_ptr = ifm_Scale_ptr + LANE_ext(IF_NUM_set[lnum]);
 		ofm_Scale_ptr = ofm_Scale_ptr + LANE_ext(OF_NUM_set[lnum]);
@@ -322,38 +313,36 @@ int main( int argc, char *argv[])
 	fwrite(ifm_Scale, sizeof(float), ifm_channel_num, fp_ioq);
 	fclose(fp_ioq);//iofm quanti
 
-	printf("syn_ifm_scale:\n");
-	for(int i=0; i<ifm_channel_num; i++){
-		printf("%5.5lf ", ifm_Scale[i]);
-	}
-	printf("\n");
+	// printf("syn_ifm_scale:\n");
+	// for(int i=0; i<ifm_channel_num; i++){
+	// 	printf("%5.5lf ", ifm_Scale[i]);
+	// }
+	// printf("\n");
 
 	fp_ioq = fopen("syn_i16c_ofm_scale.bin", "wb");
 	if(!fp_ioq) printf("syn_i16c_ofm_scale.bin\n");
 	fwrite(ofm_Scale, sizeof(float), ofm_channel_num, fp_ioq);
 	fclose(fp_ioq);//iofm quanti
 
-	printf("syn_ofm_scale:\n");
-	for(int i=0; i<ofm_channel_num; i++){
-		printf("%5.5lf ", ofm_Scale[i]);
-	}
-	printf("\n");
+	// printf("syn_ofm_scale:\n");
+	// for(int i=0; i<ofm_channel_num; i++){
+	// 	printf("%5.5lf ", ofm_Scale[i]);
+	// }
+	// printf("\n");
 
 	data_num = OH_set[LNUM-1]*OW_set[LNUM-1]*OF_NUM_set[LNUM-1];
-	// printf("here?1, data_num=%d\n", data_num);
 	float *ofm_tmp_buf = (float *)malloc(sizeof(float)*data_num);
-	// printf("here?1-0\n");
+
 	int ofm_w = OW_set[LNUM-1];
 	int ofm_h = OH_set[LNUM-1];
 	int ofm_c = OF_NUM_set[LNUM-1];
 
-	// printf("here?1-2, w_h_c = [%d, %d, %d]\n", ofm_w, ofm_h, ofm_c);
 	for(int oc=0; oc<ofm_c;oc++)
 	for(int oh=0; oh<ofm_h;oh++)
 	for(int ow=0; ow<ofm_w;ow++){
 		ofm_tmp_buf[oc*ofm_h*ofm_w + oh*ofm_w + ow] = ofm_ptr[((oc/LANE_NUM)*ofm_h*ofm_w + oh*ofm_w + ow)*LANE_NUM + (oc & (LANE_NUM-1))];
 	}
-	// printf("here?2\n");
+
 	time1 = what_time_is_it_now();
 	save_image_png_chw(ofm_tmp_buf, OH_set[LNUM-1], OW_set[LNUM-1], 3, "recon_c");
 	time2 = what_time_is_it_now();

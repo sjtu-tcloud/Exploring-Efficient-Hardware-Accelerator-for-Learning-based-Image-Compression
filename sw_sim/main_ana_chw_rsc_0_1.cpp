@@ -43,7 +43,7 @@ int main( int argc, char *argv[])
 	for(int lnum = 0; lnum < LNUM; lnum++){
 		ifm_channel_num = ifm_channel_num + LANE_ext(IF_NUM_set[lnum]);
 		ofm_channel_num = ofm_channel_num + LANE_ext(OF_NUM_set[lnum]);
-//calc ifm/ofm width/height
+
 		if(lnum==0){
 			IW_set[lnum] = im.w;
 			IH_set[lnum] = im.h;
@@ -88,19 +88,22 @@ int main( int argc, char *argv[])
 
 	data_num = get_file_size("ana_kernel_w_f32rc.bin");
 	float *kernel_w = (float *)malloc(data_num);
-	printf("read weight byte_num = %d\n", read_binfile_flt32_rb((float *)kernel_w, "ana_kernel_w_f32rc.bin", data_num/4));
+	read_binfile_flt32_rb((float *)kernel_w, "ana_kernel_w_f32rc.bin", data_num/4);
+	// printf("read weight byte_num = %d\n", read_binfile_flt32_rb((float *)kernel_w, "ana_kernel_w_f32rc.bin", data_num/4));
 
 	data_num = get_file_size("ana_bias_f32c.bin");
 	float *bias = (float *)malloc(data_num);
-	printf("%d\n", read_binfile_flt32_rb((float *)bias, "ana_bias_f32c.bin", data_num/4));
-	printf("read bias byte_num = %d\n", data_num);
+	read_binfile_flt32_rb((float *)bias, "ana_bias_f32c.bin", data_num/4);
+	// printf("%d\n", read_binfile_flt32_rb((float *)bias, "ana_bias_f32c.bin", data_num/4));
+	// printf("read bias byte_num = %d\n", data_num);
 
-	// uint32_t LNUM = 23;
 	int w_aoffset[LNUM];
-	printf("%d\n", read_binfile_flt32_rb((float*)w_aoffset, "ana_kernel_w_f32rc_oadd.bin", LNUM));
+	// printf("%d\n", read_binfile_flt32_rb((float*)w_aoffset, "ana_kernel_w_f32rc_oadd.bin", LNUM));
+	read_binfile_flt32_rb((float*)w_aoffset, "ana_kernel_w_f32rc_oadd.bin", LNUM);
 
 	int bias_aoffset[LNUM];
-	printf("%d\n", read_binfile_flt32_rb((float*)bias_aoffset, "ana_bias_f32c_oadd.bin", LNUM));
+	// printf("%d\n", read_binfile_flt32_rb((float*)bias_aoffset, "ana_bias_f32c_oadd.bin", LNUM));
+	read_binfile_flt32_rb((float*)bias_aoffset, "ana_bias_f32c_oadd.bin", LNUM);
 
 	float *inout_fixed_buf = (float *)calloc(sizeof(float), fm_max_size_single);
 
@@ -111,7 +114,6 @@ int main( int argc, char *argv[])
 
 	float *fm_mem = (float *)malloc(sizeof(float)*fm_max_size);
 	float *img_in_chw = im.data;
-	// memcpy(fm_mem, img_in_chw, im.c*im.h*im.w*sizeof(float));
 
 	int img_c = im.c, img_h = im.h, img_w = im.w;
 	float *ifm_buf = fm_mem + IFM_offset[0];
@@ -286,14 +288,12 @@ int main( int argc, char *argv[])
 		ofm_ptr = fm_mem + OFM_offset[lnum];
 
 		quantize_ifm_i16c_scale(ifm_ptr, inout_fixed_buf, ih*iw, ifm_num, LANE_NUM, ifm_Scale_ptr);
-		// memcpy(ifm_ptr,inout_fixed_buf, ih*iw*LANE_ext(ifm_num)*sizeof(float));
 
 		IC_codec(ofm_ptr, ifm_ptr, kernel_w_ptr, bias_ptr, ifm_num, ih, iw, ofm_num, oh, ow, pad, ksize, kstride, ltype,
 					p_stride, c_stride, wb_mode, ps_sf_bit, ps_mask, sq_en, TR, TC, TM, TN, OHW, KxK,
                  	IHxIW, p_stridexIR, p_stridexIC, bias_en, NToy, NTox, NTof, NTcomb, NTif, lmode, NTcomb_l);
 
 		quantize_ifm_i16c_scale(ofm_ptr, inout_fixed_buf, oh*ow, ofm_num, LANE_NUM, ofm_Scale_ptr);
-		// memcpy(ofm_ptr,inout_fixed_buf, oh*ow*LANE_ext(ofm_num)*sizeof(float));
 
 		ifm_Scale_ptr = ifm_Scale_ptr + LANE_ext(IF_NUM_set[lnum]);
 		ofm_Scale_ptr = ofm_Scale_ptr + LANE_ext(OF_NUM_set[lnum]);
@@ -325,22 +325,22 @@ int main( int argc, char *argv[])
 	fwrite(ifm_Scale, sizeof(float), ifm_channel_num, fp_ioq);
 	fclose(fp_ioq);//iofm quanti
 
-	printf("ana_ifm_scale:\n");
-	for(int i=0; i<ifm_channel_num; i++){
-		printf("%5.5lf ", ifm_Scale[i]);
-	}
-	printf("\n");
+	// printf("ana_ifm_scale:\n");
+	// for(int i=0; i<ifm_channel_num; i++){
+	// 	printf("%5.5lf ", ifm_Scale[i]);
+	// }
+	// printf("\n");
 
 	fp_ioq = fopen("ana_i16c_ofm_scale.bin", "wb");
 	if(!fp_ioq) printf("ana_i16c_ofm_scale.bin\n");
 	fwrite(ofm_Scale, sizeof(float), ofm_channel_num, fp_ioq);
 	fclose(fp_ioq);//iofm quanti
 
-	printf("ana_ofm_scale:\n");
-	for(int i=0; i<ofm_channel_num; i++){
-		printf("%5.5lf ", ofm_Scale[i]);
-	}
-	printf("\n");
+	// printf("ana_ofm_scale:\n");
+	// for(int i=0; i<ofm_channel_num; i++){
+	// 	printf("%5.5lf ", ofm_Scale[i]);
+	// }
+	// printf("\n");
 
 //save transformed img
 	data_num = OH_set[LNUM-1]*OW_set[LNUM-1]*F_num;

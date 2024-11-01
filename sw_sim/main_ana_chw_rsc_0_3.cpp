@@ -53,7 +53,7 @@ int main( int argc, char *argv[])
 	for(int lnum = 0; lnum < LNUM; lnum++){
 		ifm_channel_num = ifm_channel_num + LANE_ext(IF_NUM_set[lnum]);
 		ofm_channel_num = ofm_channel_num + LANE_ext(OF_NUM_set[lnum]);
-//calc ifm/ofm width/height
+
 		if(lnum==0){
 			IW_set[lnum] = im.w;
 			IH_set[lnum] = im.h;
@@ -98,18 +98,22 @@ int main( int argc, char *argv[])
 
 	data_num = get_file_size("ana_kernel_w_i16rc.bin");
 	int16_t *kernel_w = (int16_t *)malloc(data_num);
-	printf("read weight byte_num = %d\n", read_binfile_flt32_rb((float *)kernel_w, "ana_kernel_w_i16rc.bin", data_num/4));
+	read_binfile_flt32_rb((float *)kernel_w, "ana_kernel_w_i16rc.bin", data_num/4);
+	// printf("read weight byte_num = %d\n", read_binfile_flt32_rb((float *)kernel_w, "ana_kernel_w_i16rc.bin", data_num/4));
 
 	data_num = get_file_size("ana_bias_f32c.bin");
 	float *bias = (float *)malloc(data_num);
-	printf("%d\n", read_binfile_flt32_rb((float *)bias, "ana_bias_f32c.bin", data_num/4));
-	printf("read bias byte_num = %d\n", data_num);
+	read_binfile_flt32_rb((float *)bias, "ana_bias_f32c.bin", data_num/4);
+	// printf("%d\n", read_binfile_flt32_rb((float *)bias, "ana_bias_f32c.bin", data_num/4));
+	// printf("read bias byte_num = %d\n", data_num);
 
 	int w_aoffset[LNUM];
-	printf("%d\n", read_binfile_flt32_rb((float*)w_aoffset, "ana_kernel_w_i16rc_oadd.bin", LNUM));
+	read_binfile_flt32_rb((float*)w_aoffset, "ana_kernel_w_i16rc_oadd.bin", LNUM);
+	// printf("%d\n", read_binfile_flt32_rb((float*)w_aoffset, "ana_kernel_w_i16rc_oadd.bin", LNUM));
 
 	int bias_aoffset[LNUM];
-	printf("%d\n", read_binfile_flt32_rb((float*)bias_aoffset, "ana_bias_f32c_oadd.bin", LNUM));
+	read_binfile_flt32_rb((float*)bias_aoffset, "ana_bias_f32c_oadd.bin", LNUM);
+	// printf("%d\n", read_binfile_flt32_rb((float*)bias_aoffset, "ana_bias_f32c_oadd.bin", LNUM));
 
 	int16_t *inout_fixed_buf = (int16_t *)calloc(sizeof(int16_t), fm_max_size_single);
 
@@ -342,9 +346,6 @@ int main( int argc, char *argv[])
 			if(prv_exit_en)
 				break;
 		}
-
-		// quantize_ifm_i16c_scale(ofm_ptr, inout_fixed_buf, oh*ow, ofm_num, LANE_NUM, ofm_Scale_ptr);
-		// memcpy(ofm_ptr,inout_fixed_buf, oh*ow*LANE_ext(ofm_num)*sizeof(float));
 
 		ifm_Scale_ptr = ifm_Scale_ptr + LANE_ext(IF_NUM_set[lnum]);
 		ofm_Scale_ptr = ofm_Scale_ptr + LANE_ext(OF_NUM_set[lnum]);
