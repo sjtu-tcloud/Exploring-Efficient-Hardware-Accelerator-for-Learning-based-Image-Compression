@@ -388,8 +388,87 @@ syn_output: recon_c.png, h_w_c= [1365, 2048, 3]
 </div>
 
 ## HLS Design
+HLS design is included in **hls** repo, related config please check the script.tcl. After C-Synthesis, C/C++ code is transformed into Verilog/VHDL codes, and could be exported as IP. Make sure that set IP version as 0.0.0.
+
+## Vivado Design
+This FPGA demo's block design is shown as below:
+
+<div style="display: flex;">
+    <img src="img/block_design.jpeg" width="100%" alt="block design"/> 
+</div>
+
+For design's Nr/wDMA=2+2/2. we instantiate 6 independment DMAs for concurrent transmission. Because HLS cannot schedule con-current transmission in the shared channel, OFM and IFM-extra shares 2 physical AXI interfaces between FPGA and ARM system. You could set **set_param general.Maxthreads threads_nums** in TCL to speed up FPGA compile flow.
+
+## Vitis
+After Vivado generating bitstream, program (in **vitis** repo) executed in ARM CPU should be compiled. We add **-static** flag in linker settings, and add **-lm** in library (Optimization level is release -O2).
+
+## Executation
+
+We prepare bin files that generated in sw-sim, bitstream generated in Vivado, and executable program (.elf) generated in vitis to test our FPGA design in ARM+FPGA platform.
+
+```
+root@petazu9eg:~/ext4/X_LIC# ls
+Bitstream.bin		  ana_bias_f32c_oadd.bin     ana_i16c_interQ.bin	   ana_i16c_ofm_scale_cb.bin	ana_q_out_chw.bin	 syn_bias_f32c_oadd.bin     syn_i16c_interQ.bin		  syn_i16c_ofm_scale_cb.bin
+abigail-keenan-27293.png  ana_i16c_ifm_scale.bin     ana_i16c_kernel_scale.bin	   ana_kernel_w_i16rc.bin	ic_acc_i16c_hw_xlic.elf  syn_i16c_ifm_scale.bin     syn_i16c_kernel_scale.bin	  syn_kernel_w_T_i16rc.bin
+ana_IHW_OHW_set.bin	  ana_i16c_ifm_scale_cb.bin  ana_i16c_kernel_scale_cb.bin  ana_kernel_w_i16rc_oadd.bin	recon_c.png		 syn_i16c_ifm_scale_cb.bin  syn_i16c_kernel_scale_cb.bin  syn_kernel_w_T_i16rc_oadd.bin
+ana_bias_f32c.bin	  ana_i16c_ifm_sqQ.bin	     ana_i16c_ofm_scale.bin	   ana_kernel_w_i16rc_srcb.bin	syn_bias_f32c.bin	 syn_i16c_ifm_sqQ.bin	    syn_i16c_ofm_scale.bin	  syn_kernel_w_T_i16rc_srcb.bin
+
+##Config FPGA
+root@petazu9eg:~/ext4/X_LIC# cp Bitstream.bin /lib/firmware/
+root@petazu9eg:~/ext4/X_LIC# echo 0 > /sys/class/fpga_manager/fpga0/flags 
+root@petazu9eg:~/ext4/X_LIC# echo Bitstream.bin > /sys/class/fpga_manager/fpga0/firmware
+
+##Test
+root@petazu9eg:~/ext4/X_LIC# ./ic_acc_i16c_hw_xlic.elf abigail-keenan-27293.png 0 0
+Input img:abigail-keenan-27293.png
+ w=2048,h=1365,c=3
+fm_max_size=0x5580000
+ana_kernel_w_i16rc_srcb.bin's data size is 1766144, 0x1af300
+ana_bias_f32c.bin's data size is 2048, 0x800
+ana_i16c_ifm_scale_cb.bin's data size is 2080, 0x820
+ana_i16c_kernel_scale_cb.bin's data size is 2560, 0xa00
+ana_i16c_ofm_scale_cb.bin's data size is 2560, 0xa00
+ana_0: ic_h_w= [3, 1365, 2048], oc_h_w= [128, 342, 512], lat= 0.27263
+gdn_0: ic_h_w= [128, 342, 512], oc_h_w= [128, 342, 512], lat= 0.06105
+ana_1: ic_h_w= [128, 342, 512], oc_h_w= [128, 171, 256], lat= 0.09479
+gdn_1: ic_h_w= [128, 171, 256], oc_h_w= [128, 171, 256], lat= 0.01505
+ana_2: ic_h_w= [128, 171, 256], oc_h_w= [128, 86, 128], lat= 0.02350
+
+ana lat_sum= 0.46714
+copy start-----byte_num=2818048
+copy ok!
+ana_output: ana_q_out_chw.bin, h_w_c= [86, 128, 128]
+ana_IHW_OHW_set.bin's data size is 80, 0x50
+fm_max_size=0xab00000
+syn_kernel_w_T_i16rc_srcb.bin's data size is 1869824, 0x1c8800
+syn_bias_f32c.bin's data size is 2080, 0x820
+syn_i16c_ifm_scale_cb.bin's data size is 2560, 0xa00
+syn_i16c_kernel_scale_cb.bin's data size is 2080, 0x820
+syn_i16c_ofm_scale_cb.bin's data size is 2080, 0x820
+syn_input: ana_q_out_chw.bin, h_w_c= [86, 128, 128]
+syn_0: ic_h_w= [128, 86, 128], oc_h_w= [128, 171, 256], lat= 0.02210
+igdn_0: ic_h_w= [128, 171, 256], oc_h_w= [128, 171, 256], lat= 0.01504
+syn_1: ic_h_w= [128, 171, 256], oc_h_w= [128, 342, 512], lat= 0.08794
+igdn_1: ic_h_w= [128, 342, 512], oc_h_w= [128, 342, 512], lat= 0.06106
+syn_2: ic_h_w= [128, 342, 512], oc_h_w= [3, 1365, 2048], lat= 0.14476
 
 
+syn lat_sum= 0.33102
+
+copy start-----byte_num=44728320
+copy ok!
+save_png(s): 3.77635
+syn_output: recon_c.png, h_w_c= [1365, 2048, 3]
+root@petazu9eg:~/ext4/X_LIC# ls recon_c.png -al
+-rw-r--r-- 1 root root 5626610 Nov 23 03:04 recon_c.png
+```
+
+**img/abigail-keenan-27293.png (Left); img/recon_i16c_hw.png (Right)**
+<div style="display: flex;">
+    <img src="img/abigail-keenan-27293.png" width="45%" alt="First Image"/> 
+    <div style="width: 2%;"></div>
+    <img src="img/recon_i16c_hw.png" width="45%" alt="Second Image"/>
+</div>
 
 ## Reference
 [1] Ballé J, Laparra V, Simoncelli E P. End-to-end optimized image compression[J]. arXiv preprint arXiv:1611.01704, 2016.

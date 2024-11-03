@@ -1,0 +1,40 @@
+{
+   "ActiveEmotionalView":"Default View",
+   "Default View_ScaleFactor":"1.10562",
+   "Default View_TopLeft":"101,-667",
+   "ExpandedHierarchyInLayout":"",
+   "guistr":"# # String gsaved with Nlview 7.0.21  2019-05-29 bk=1.5064 VDI=41 GEI=36 GUI=JA:9.0 non-TLS
+#  -string -flagsOSRD
+preplace inst zynq_ultra_ps_e_0 -pg 1 -lvl 2 -x 560 -y -670 -defaultsOSRD
+preplace inst clk_wiz_0 -pg 1 -lvl 1 -x 120 -y -220 -defaultsOSRD
+preplace inst IC_codec_0 -pg 1 -lvl 2 -x 560 -y -360 -defaultsOSRD
+preplace inst ps8_0_axi_periph -pg 1 -lvl 4 -x 1480 -y -250 -defaultsOSRD
+preplace inst rst_clk_wiz_0_199M -pg 1 -lvl 3 -x 1100 -y -520 -defaultsOSRD
+preplace inst axi_smc -pg 1 -lvl 4 -x 1480 -y -70 -defaultsOSRD
+preplace inst axi_smc_1 -pg 1 -lvl 4 -x 1480 -y -790 -defaultsOSRD
+preplace inst axi_smc_2 -pg 1 -lvl 4 -x 1480 -y -600 -defaultsOSRD
+preplace inst axi_smc_3 -pg 1 -lvl 4 -x 1480 -y -440 -defaultsOSRD
+preplace netloc zynq_ultra_ps_e_0_pl_resetn0 1 0 3 20 -820 NJ -820 910
+preplace netloc zynq_ultra_ps_e_0_pl_clk0 1 0 3 30 -520 NJ -520 860
+preplace netloc clk_wiz_0_clk_out1 1 1 3 210 -810 900 -700 1300
+preplace netloc clk_wiz_0_locked 1 1 2 220J -480 NJ
+preplace netloc rst_clk_wiz_0_199M_peripheral_aresetn 1 1 3 250 -240 NJ -240 1310
+preplace netloc zynq_ultra_ps_e_0_M_AXI_HPM0_FPD 1 2 2 880J -680 1280
+preplace netloc ps8_0_axi_periph_M00_AXI 1 1 4 250 -530 890J -690 NJ -690 1650
+preplace netloc IC_codec_0_m_axi_DATA_BUS0 1 2 2 NJ -420 1270
+preplace netloc axi_smc_M00_AXI 1 1 4 230 20 NJ 20 NJ 20 1630
+preplace netloc IC_codec_0_m_axi_DATA_BUS1 1 2 2 870J -710 1270
+preplace netloc axi_smc_1_M00_AXI 1 1 4 240 -840 NJ -840 1330J -710 1660
+preplace netloc IC_codec_0_m_axi_DATA_BUS2 1 2 2 920J -630 N
+preplace netloc axi_smc_2_M00_AXI 1 1 4 250 -830 NJ -830 1320J -700 1660
+preplace netloc IC_codec_0_m_axi_DATA_BUS3 1 2 2 930J -370 1290
+preplace netloc axi_smc_3_M00_AXI 1 1 4 240 10 NJ 10 NJ 10 1640
+preplace netloc IC_codec_0_m_axi_DATA_BUS4 1 2 2 930 -620 1270J
+preplace netloc IC_codec_0_m_axi_DATA_BUS5 1 2 2 N -360 1320J
+levelinfo -pg 1 0 120 560 1100 1480 1680
+pagesize -pg 1 -db -bbox -sgen 0 -870 1680 530
+"
+}
+{
+   "da_axi4_cnt":"219"
+}

@@ -1,0 +1,13 @@
+vhdl xil_defaultlib  \
+"../../../../ic_acc_zcu102_vv1902.srcs/sources_1/bd/design_1/ipshared/eaee/hdl/ip/IC_codec_ap_fadd_8_full_dsp_32.vhd" \
+"../../../../ic_acc_zcu102_vv1902.srcs/sources_1/bd/design_1/ipshared/eaee/hdl/ip/IC_codec_ap_fdiv_28_no_dsp_32.vhd" \
+"../../../../ic_acc_zcu102_vv1902.srcs/sources_1/bd/design_1/ipshared/eaee/hdl/ip/IC_codec_ap_fmul_4_max_dsp_32.vhd" \
+"../../../../ic_acc_zcu102_vv1902.srcs/sources_1/bd/design_1/ipshared/eaee/hdl/ip/IC_codec_ap_sitofp_6_no_dsp_32.vhd" \
+"../../../bd/design_1/ip/design_1_IC_codec_0_16/sim/design_1_IC_codec_0_16.vhd" \
+"../../../bd/design_1/ip/design_1_rst_clk_wiz_0_199M_17/sim/design_1_rst_clk_wiz_0_199M_17.vhd" \
+"../../../bd/design_1/ip/design_1_axi_smc_18/bd_0/ip/ip_1/sim/bd_13ef_psr_aclk_0.vhd" \
+"../../../bd/design_1/ip/design_1_axi_smc_1_17/bd_0/ip/ip_1/sim/bd_64e8_psr_aclk_0.vhd" \
+"../../../bd/design_1/ip/design_1_axi_smc_2_14/bd_0/ip/ip_1/sim/bd_21a8_psr_aclk_0.vhd" \
+"../../../bd/design_1/ip/design_1_axi_smc_3_1/bd_0/ip/ip_1/sim/bd_a818_psr_aclk_0.vhd" \
+
+nosort
